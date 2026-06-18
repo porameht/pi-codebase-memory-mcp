@@ -1,0 +1,47 @@
+{
+  "name": "pi-codebase-memory",
+  "version": "0.1.0",
+  "description": "Pi package that bridges the codebase-memory-mcp server into pi as native tools — a tree-sitter knowledge graph for fast structural code search, call-path tracing, architecture overviews, and impact analysis.",
+  "type": "module",
+  "license": "MIT",
+  "author": "porameht",
+  "homepage": "https://github.com/porameht/pi-codebase-memory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/porameht/pi-codebase-memory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/porameht/pi-codebase-memory/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "mcp",
+    "codebase-memory",
+    "knowledge-graph",
+    "code-intelligence",
+    "tree-sitter",
+    "code-search"
+  ],
+  "files": [
+    "extensions",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  }
+}

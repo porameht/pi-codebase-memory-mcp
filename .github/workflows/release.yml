@@ -1,0 +1,125 @@
+# Release workflow: bump version, update CHANGELOG.md, tag, publish to npm,
+# and create a GitHub Release — all from one manual trigger.
+#
+# Setup (one time):
+#   1. Create a granular npm access token at npmjs.com
+#      (Access Tokens > Generate New Token > Granular)
+#      - Packages: pi-codebase-memory → Read and write
+#      - IMPORTANT: enable "Bypass two-factor authentication"
+#   2. Add it as a repository secret named NPM_TOKEN
+#      (GitHub repo > Settings > Secrets and variables > Actions)
+#
+# Usage:
+#   GitHub repo > Actions > Release > Run workflow > choose patch/minor/major
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump"
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  id-token: write # npm --provenance
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for changelog generation
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: version
+        run: |
+          NEW_TAG=$(npm version "${{ inputs.bump }}" --no-git-tag-version)
+          NEW_VERSION="${NEW_TAG#v}"
+          echo "tag=${NEW_TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          # Keep the VERSION constant in the extension in sync
+          sed -i "s/^const VERSION = \".*\";/const VERSION = \"${NEW_VERSION}\";/" extensions/codebase-memory.ts
+
+      - name: Update CHANGELOG.md
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          DATE=$(date -u +%Y-%m-%d)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+
+          if [ -n "$LAST_TAG" ]; then
+            NOTES=$(git log "${LAST_TAG}..HEAD" --no-merges --pretty='- %s')
+            COMPARE_LINK="[${VERSION}]: https://github.com/${GITHUB_REPOSITORY}/compare/${LAST_TAG}...${TAG}"
+          else
+            NOTES=$(git log --no-merges --pretty='- %s')
+            COMPARE_LINK="[${VERSION}]: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+          fi
+          [ -n "$NOTES" ] || NOTES="- Maintenance release"
+
+          # Save release notes for the GitHub Release body
+          {
+            echo "$NOTES"
+            echo ""
+            echo "Install: \`pi install npm:pi-codebase-memory\`"
+            echo "npm: https://www.npmjs.com/package/pi-codebase-memory"
+          } > /tmp/release-notes.md
+
+          # Insert the new section above the first existing "## [" section
+          NEW_SECTION="## [${VERSION}] - ${DATE}\n\n### Changed\n\n${NOTES//$'\n'/\\n}\n"
+          awk -v section="$NEW_SECTION" '
+            !inserted && /^## \[/ { printf "%s\n", section; inserted=1 }
+            { print }
+            END { if (!inserted) printf "\n%s\n", section }
+          ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+
+          # Append the compare link at the end
+          printf '%s\n' "$COMPARE_LINK" >> CHANGELOG.md
+
+      - name: Commit, tag, and push
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git add package.json package-lock.json extensions/codebase-memory.ts CHANGELOG.md
+          git commit -m "release: ${TAG}"
+          git tag -a "$TAG" -m "Release ${TAG}"
+          git push origin HEAD --follow-tags
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          gh release create "$TAG" --title "$TAG" --notes-file /tmp/release-notes.md
