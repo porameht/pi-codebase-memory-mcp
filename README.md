@@ -18,13 +18,13 @@ curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/i
 ## Install
 
 ```bash
-pi install npm:pi-codebase-memory
+pi install npm:pi-codebase-memory-mcp
 ```
 
 Or try it without installing:
 
 ```bash
-pi -e npm:pi-codebase-memory
+pi -e npm:pi-codebase-memory-mcp
 ```
 
 ## What you get

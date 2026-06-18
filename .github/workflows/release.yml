@@ -89,8 +89,8 @@ jobs:
           {
             echo "$NOTES"
             echo ""
-            echo "Install: \`pi install npm:pi-codebase-memory\`"
-            echo "npm: https://www.npmjs.com/package/pi-codebase-memory"
+            echo "Install: \`pi install npm:pi-codebase-memory-mcp\`"
+            echo "npm: https://www.npmjs.com/package/pi-codebase-memory-mcp"
           } > /tmp/release-notes.md
 
           # Insert the new section above the first existing "## [" section
