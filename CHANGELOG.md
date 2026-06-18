@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-06-18
+
+### Changed
+
+- Simplified extension (dropped cosmetic label/details); README refreshed to match.
+
 ## [0.1.1] - 2026-06-18
 
 ### Changed
