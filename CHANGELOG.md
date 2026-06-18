@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2026-06-18
+
+### Changed
+
+- Renamed npm package to `pi-codebase-memory-mcp` (`pi-codebase-memory` was taken).
+
 ## [0.1.0] - 2026-06-18
 
 ### Added

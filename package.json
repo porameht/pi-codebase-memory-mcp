@@ -1,6 +1,6 @@
 {
   "name": "pi-codebase-memory-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pi package that bridges the codebase-memory-mcp server into pi as native tools — a tree-sitter knowledge graph for fast structural code search, call-path tracing, architecture overviews, and impact analysis.",
   "type": "module",
   "license": "MIT",

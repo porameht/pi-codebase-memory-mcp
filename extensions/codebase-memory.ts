@@ -36,7 +36,7 @@ export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 			client = undefined;
 		}
 		if (client) return client;
-		const c = new Client({ name: "pi-codebase-memory", version: "0.1.0" });
+		const c = new Client({ name: "pi-codebase-memory", version: "0.1.1" });
 		await c.connect(new StdioClientTransport({ command: BIN, args: [], env: process.env as Record<string, string> }));
 		client = c;
 		return c;
