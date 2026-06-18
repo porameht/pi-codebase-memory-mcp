@@ -51,21 +51,19 @@ export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 			seen.add(name);
 			pi.registerTool({
 				name,
-				label: `cbm: ${t.name}`,
 				description: t.description ?? `codebase-memory-mcp tool "${t.name}".`,
 				parameters: (t.inputSchema as unknown as TSchema) ?? Type.Object({}),
 				async execute(_id, params) {
 					const args = (params ?? {}) as Record<string, unknown>;
 					// ponytail: respawn-and-retry once if the process died; SDK handles the call timeout
-					let res: { content?: unknown; isError?: boolean };
+					let res: { content?: any[]; isError?: boolean };
 					try {
 						res = (await (await getClient()).callTool({ name: t.name, arguments: args })) as any;
 					} catch {
 						res = (await (await getClient(true)).callTool({ name: t.name, arguments: args })) as any;
 					}
-					const content = (Array.isArray(res.content) ? res.content : [{ type: "text", text: "(empty)" }]) as any[];
-					if (res.isError) throw new Error(content.map((b) => b.text).join("\n") || "tool call failed");
-					return { content, details: { binary: BIN, mcpTool: t.name } };
+					if (res.isError) throw new Error((res.content ?? []).map((b) => b.text).join("\n") || "tool call failed");
+					return { content: res.content ?? [{ type: "text", text: "(empty)" }] };
 				},
 			});
 		}
