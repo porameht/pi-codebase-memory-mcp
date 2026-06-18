@@ -1,4 +1,4 @@
-# pi-codebase-memory
+# pi-codebase-memory-mcp
 
 A [pi](https://github.com/earendil-works/pi) package that bridges the **[codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)** server into pi as native tools. Gives your agent a fast, local **tree-sitter knowledge graph** of your repos — structural code search, call-path tracing, architecture overviews, and change-impact analysis in milliseconds, with far fewer tokens than file-by-file grepping.
 
@@ -32,9 +32,7 @@ pi -e npm:pi-codebase-memory-mcp
 - **Extension** — spawns the local `codebase-memory-mcp` server over stdio, discovers its tools dynamically, and registers each as a pi tool with a `cbm_` prefix.
 - **`cbm_connect` tool** — always available, so the agent can start (or restart) the server mid-session and pick up newly discovered tools immediately.
 - **Safety gate** — `cbm_delete_project` pops a confirmation dialog before wiping a project's graph (disable with `CBM_CONFIRM=off`).
-- **Clean tool rendering** — compact ✓/✗ rows with summaries instead of raw JSON; expand for full output.
 - **Skill** — `codebase-memory`, teaching the agent the index → search → trace → query workflow.
-- **Command** — `/cbm` shows status and registered tools; `/cbm reconnect` restarts and re-discovers.
 
 ## Tools (discovered dynamically)
 
@@ -61,7 +59,7 @@ Querying: `cbm_search_graph`, `cbm_trace_path`, `cbm_detect_changes`, `cbm_query
 ## Notes
 
 - Tools are discovered at connection time; the set may change between server versions.
-- If the binary isn't installed when pi starts, pi still starts normally — install it, then run `/cbm reconnect` or ask the agent to connect.
+- If the binary isn't installed when pi starts, pi still starts normally — install it, then ask the agent to connect (`cbm_connect`).
 - Index with an **absolute** `repo_path`. After the first index, a background watcher keeps the graph fresh.
 
 ## License
