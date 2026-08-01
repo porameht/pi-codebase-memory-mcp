@@ -97,5 +97,12 @@ export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 		});
 	}
 
+	// Close the MCP child process so the parent event loop can drain
+	// (without this, pi -p hangs after answering because stdio pipes stay open).
+	pi.on("session_shutdown", async () => {
+		await client?.close().catch(() => undefined);
+		client = undefined;
+	});
+
 	void register().catch(() => undefined); // silent if binary not installed yet
 }
