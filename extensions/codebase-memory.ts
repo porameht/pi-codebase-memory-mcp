@@ -28,6 +28,7 @@ const HINT =
 
 export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 	let client: Client | undefined;
+	let shuttingDown = false;
 	const seen = new Set<string>();
 
 	async function getClient(reconnect = false): Promise<Client> {
@@ -38,6 +39,13 @@ export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 		if (client) return client;
 		const c = new Client({ name: "pi-codebase-memory", version: "0.1.2" });
 		await c.connect(new StdioClientTransport({ command: BIN, args: [], env: process.env as Record<string, string> }));
+		if (shuttingDown) {
+			// Shutdown landed while connect() was in flight; don't adopt
+			// the freshly spawned server, or it leaks and holds the event
+			// loop open just the same.
+			await c.close().catch(() => {});
+			throw new Error("session is shutting down");
+		}
 		client = c;
 		return c;
 	}
@@ -100,6 +108,7 @@ export default function codebaseMemoryExtension(pi: ExtensionAPI) {
 	// Close the MCP child process so the parent event loop can drain
 	// (without this, pi -p hangs after answering because stdio pipes stay open).
 	pi.on("session_shutdown", async () => {
+		shuttingDown = true;
 		await client?.close().catch(() => undefined);
 		client = undefined;
 	});
