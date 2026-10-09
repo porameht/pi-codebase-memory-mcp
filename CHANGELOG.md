@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3] - 2026-06-19
+
+### Fixed
+
+- Stop inheriting the codebase-memory-mcp child process's stderr into Pi's TUI (set `stderr: "ignore"` on `StdioClientTransport`); default `CBM_LOG_LEVEL=error` for the child when the user hasn't set one. Fixes #2.
+
 ## [0.1.2] - 2026-06-18
 
 ### Changed
